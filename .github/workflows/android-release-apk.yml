@@ -32,15 +32,17 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Configure Pre-Installed Android SDK & Gradle 8.9
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          if [ -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
+          fi
+          curl -sL "https://services.gradle.org/distributions/gradle-8.9-bin.zip" -o "$RUNNER_TEMP/gradle-8.9.zip"
+          unzip -q "$RUNNER_TEMP/gradle-8.9.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/gradle-8.9/bin" >> "$GITHUB_PATH"
 
-      - name: Setup Gradle 8.9
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.9"
-
-      - name: Configure Release Keystore Signing (GitHub Secrets or Automated Keytool Generation)
+      - name: Configure Release Keystore Signing
         env:
           SECRET_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           SECRET_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -56,7 +58,7 @@ jobs:
             echo "ANDROID_KEY_ALIAS=$SECRET_KEY_ALIAS" >> "$GITHUB_ENV"
             echo "ANDROID_KEY_PASSWORD=$SECRET_KEY_PASSWORD" >> "$GITHUB_ENV"
           else
-            echo "::notice::ANDROID_KEYSTORE_BASE64 secret not set; generating ephemeral RSA-2048 release keystore via JDK keytool for v1+v2 APK signing."
+            echo "Generating RSA-2048 release keystore via JDK keytool for v1+v2 APK signing."
             GENERATED_PASS=$(openssl rand -hex 16)
             GENERATED_ALIAS="jipto_release_key"
             keytool -genkeypair -v \
@@ -75,17 +77,6 @@ jobs:
             echo "ANDROID_KEY_PASSWORD=$GENERATED_PASS" >> "$GITHUB_ENV"
           fi
 
-      - name: Write google-services.json from Secret (if configured)
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: |
-          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
-            echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
-            echo "Wrote android/app/google-services.json from GOOGLE_SERVICES_JSON secret."
-          else
-            echo "::notice::Using built-in FirebaseOptions initialization for project confident-env-q01dl."
-          fi
-
       - name: Build Signed Release APK (:app:assembleRelease)
         working-directory: ./android
         env:
@@ -94,15 +85,14 @@ jobs:
         run: |
           gradle :app:assembleRelease --no-daemon --stacktrace
 
-      - name: Locate & Verify Signed Release APK
+      - name: Locate & Verify Signed Release APK (JIPTO.apk)
         run: |
           APK_PATH=$(find android/app/build/outputs/apk/release -name "*-release.apk" | head -n 1)
           if [ -z "$APK_PATH" ] || [ ! -f "$APK_PATH" ]; then
             echo "::error::Signed release APK was not produced. Check Gradle build logs."
             exit 1
           fi
-          VERSION_NAME="${{ github.event.inputs.version_name || '1.0.0' }}"
-          FINAL_APK="android/app/build/outputs/apk/release/jipto-customer-v${VERSION_NAME}-release.apk"
+          FINAL_APK="android/app/build/outputs/apk/release/JIPTO.apk"
           cp "$APK_PATH" "$FINAL_APK"
           APKSIGNER_BIN=$(find "$ANDROID_HOME/build-tools" -name "apksigner" | sort -V | tail -n 1)
           if [ -n "$APKSIGNER_BIN" ]; then
@@ -111,16 +101,17 @@ jobs:
           APK_SIZE_BYTES=$(stat -c%s "$FINAL_APK" 2>/dev/null || wc -c < "$FINAL_APK")
           echo "Verified signed APK: $FINAL_APK ($APK_SIZE_BYTES bytes)"
           echo "VERIFIED_APK_PATH=$FINAL_APK" >> "$GITHUB_ENV"
+          VERSION_NAME="${{ github.event.inputs.version_name || '1.0.0' }}"
           echo "VERSION_TAG=v${VERSION_NAME}-build.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
 
-      - name: Upload Signed JIPTO APK Artifact
+      - name: Upload Signed JIPTO.apk Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: jipto-customer-release-apk
+          name: JIPTO-apk
           path: ${{ env.VERIFIED_APK_PATH }}
           if-no-files-found: error
 
-      - name: Publish Signed APK to GitHub Releases
+      - name: Publish Signed JIPTO.apk to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_TAG }}
@@ -129,7 +120,7 @@ jobs:
             Automated native Android release build for **JIPTO Customer Grocery Delivery** (`com.jipto.customer`).
             - Built with Kotlin, Android SDK 34 & Jetpack Compose
             - Signed & verified with `apksigner` (v1 + v2 signature schemes)
-            - Ready for direct download and installation on Android phones via **JIPTO Settings → App Installation / Download APK**
+            - Direct APK asset: `JIPTO.apk`
           files: ${{ env.VERIFIED_APK_PATH }}
           draft: false
           prerelease: false
