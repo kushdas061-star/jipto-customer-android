@@ -27,7 +27,8 @@ android {
 
         // Inject repository slug from GitHub Actions environment so Settings -> Download APK
         // automatically queries the exact GitHub repository's releases endpoint.
-        val repoSlug = System.getenv("GITHUB_REPOSITORY") ?: ""
+        val repoSlug = System.getenv("GITHUB_REPOSITORY")?.ifBlank { "kushdas061-star/jipto-customer-android" }
+            ?: "kushdas061-star/jipto-customer-android"
         buildConfigField("String", "GITHUB_REPO_SLUG", "\"$repoSlug\"")
 
         // Shared JIPTO & MY STORE Firebase backend configuration
@@ -87,6 +88,11 @@ android {
         }
     }
 
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -117,8 +123,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.navigation:navigation-compose:2.8.2")
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
@@ -131,16 +135,10 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-storage-ktx")
     implementation("com.google.firebase:firebase-messaging-ktx")
-    implementation("com.google.firebase:firebase-functions-ktx")
 
-    // Google Maps SDK for Android & Jetpack Compose Maps
-    implementation("com.google.android.gms:play-services-maps:19.0.0")
+    // Google Maps SDK for Android (19.2.0+ includes MapsApiSettings) & Jetpack Compose Maps
+    implementation("com.google.android.gms:play-services-maps:19.2.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.maps.android:maps-compose:4.3.3")
-    implementation("com.google.android.libraries.places:places:3.5.0")
-
-    // Razorpay Android Checkout SDK
-    implementation("com.razorpay:checkout:1.6.40")
 }

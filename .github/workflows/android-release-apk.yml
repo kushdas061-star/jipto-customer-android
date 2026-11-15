@@ -34,6 +34,7 @@ jobs:
 
       - name: Configure Pre-Installed Android SDK & Gradle 8.9
         run: |
+          rm -f /tmp/nav.aar /tmp/act.aar || true
           echo "ANDROID_HOME=$ANDROID_HOME"
           if [ -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
             yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
@@ -82,8 +83,14 @@ jobs:
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
           JIPTO_VERSION_NAME: ${{ github.event.inputs.version_name || '1.0.0' }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gradle :app:assembleRelease --no-daemon --stacktrace
+          set -o pipefail
+          if ! gradle :app:assembleRelease --no-daemon --stacktrace 2>&1 | tee "$RUNNER_TEMP/gradle-build.log"; then
+            ERR_SNIPPET=$(grep -E "e: |FAILURE:|What went wrong:|Execution failed|Caused by:|Unresolved reference" -A 8 "$RUNNER_TEMP/gradle-build.log" | tail -n 80 || tail -n 80 "$RUNNER_TEMP/gradle-build.log")
+            gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" -f body="Gradle build failed:\n\`\`\`\n${ERR_SNIPPET}\n\`\`\`" || true
+            exit 1
+          fi
 
       - name: Locate & Verify Signed Release APK (JIPTO.apk)
         run: |

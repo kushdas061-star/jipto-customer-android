@@ -1323,7 +1323,7 @@ private fun downloadAndPromptInstallJiptoApk(
     }
 
     try {
-        val fileName = apkMetadata.apkFileName.ifBlank { "jipto-customer-v${apkMetadata.versionName}-release.apk" }
+        val fileName = apkMetadata.apkFileName.ifBlank { "JIPTO.apk" }
         val publicDownloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         val targetFile = File(publicDownloadsDir, fileName)
         if (targetFile.exists()) {
@@ -1331,7 +1331,7 @@ private fun downloadAndPromptInstallJiptoApk(
         }
 
         val request = DownloadManager.Request(Uri.parse(apkMetadata.downloadUrl))
-            .setTitle("JIPTO Customer APK (v${apkMetadata.versionName})")
+            .setTitle("JIPTO Customer APK ($fileName)")
             .setDescription("Downloading verified GitHub Actions release APK to Downloads folder")
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             .setMimeType("application/vnd.android.package-archive")
@@ -1354,7 +1354,7 @@ private fun downloadAndPromptInstallJiptoApk(
 
                 val downloadUri = downloadManager.getUriForDownloadedFile(downloadId)
                 if (downloadUri == null && !targetFile.exists()) {
-                    onStatusUpdate("APK download failed or file was removed. Please tap Download again.")
+                    onStatusUpdate("APK download failed or file was removed. Please tap Build & Download APK (JIPTO.apk) again.")
                     return
                 }
 
@@ -1510,29 +1510,6 @@ fun JiptoSettingsScreen(
                     fontWeight = FontWeight.Bold
                 )
 
-                OutlinedTextField(
-                    value = githubRepoSlug,
-                    onValueChange = onUpdateRepoSlug,
-                    label = { Text("GitHub Repository (owner/repo)") },
-                    placeholder = { Text("owner/jipto-android") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                OutlinedButton(
-                    onClick = { onCheckApkRelease(githubRepoSlug) },
-                    enabled = !isCheckingApk,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        if (isCheckingApk) "Checking GitHub Releases..."
-                        else if (isHindi) "नवीनतम रिलीज़ जांचें"
-                        else "Check Latest GitHub Release"
-                    )
-                }
-
                 // Metadata rows: App version, APK file size, Build date, Download status
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant,
@@ -1613,23 +1590,27 @@ fun JiptoSettingsScreen(
                     }
                 }
 
-                // Download Latest JIPTO APK Button
+                // Single Unified APK Action Button: Build & Download APK (JIPTO.apk)
                 Button(
                     onClick = {
-                        downloadAndPromptInstallJiptoApk(
-                            context = context,
-                            apkMetadata = apkMetadata,
-                            onStatusUpdate = onUpdateDownloadStatus
-                        )
+                        if (apkMetadata.isAvailable && apkMetadata.downloadUrl.startsWith("https://")) {
+                            downloadAndPromptInstallJiptoApk(
+                                context = context,
+                                apkMetadata = apkMetadata,
+                                onStatusUpdate = onUpdateDownloadStatus
+                            )
+                        } else {
+                            onCheckApkRelease(githubRepoSlug.ifBlank { "kushdas061-star/jipto-customer-android" })
+                        }
                     },
-                    enabled = apkMetadata.isAvailable && apkMetadata.downloadUrl.startsWith("https://"),
+                    enabled = !isCheckingApk,
                     colors = ButtonDefaults.buttonColors(containerColor = JiptoGreenPrimary),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (isHindi) "नवीनतम JIPTO APK डाउनलोड करें" else "Download Latest JIPTO APK",
+                        text = "Build & Download APK (JIPTO.apk)",
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -1638,7 +1619,7 @@ fun JiptoSettingsScreen(
                     text = if (isHindi)
                         "डाउनलोड पूरा होने के बाद, Android के सामान्य पैकेज इंस्टॉलर का उपयोग करके JIPTO इंस्टॉल करें।"
                     else
-                        "After downloading, Android will open the standard Package Installer prompt so you can confirm and install the JIPTO APK.",
+                        "After downloading JIPTO.apk, Android will open the standard Package Installer prompt so you can confirm and install the JIPTO app.",
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
