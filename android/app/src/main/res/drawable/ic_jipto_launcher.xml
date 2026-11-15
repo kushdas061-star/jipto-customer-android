@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- JIPTO Fresh Green (#16A34A) Brand Background -->
+    <path
+        android:fillColor="#16A34A"
+        android:pathData="M0,0h108v108h-108z" />
+    <!-- Deep Emerald (#166534) Subtle Inner Circle -->
+    <path
+        android:fillColor="#166534"
+        android:pathData="M54,18A36,36 0,1 1,18 54A36,36 0,0 1,54 18Z" />
+    <!-- Crisp White Grocery Basket & Quick Lightning Bolt -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,44h40l-4,26H38L34,44zM44,44v-6c0,-5.5 4.5,-10 10,-10s10,4.5 10,10v6h-4v-6c0,-3.3 -2.7,-6 -6,-6s-6,2.7 -6,6v6H44z" />
+    <path
+        android:fillColor="#DCFCE7"
+        android:pathData="M56,48l-8,10h6l-2,8l8,-10h-6z" />
+</vector>

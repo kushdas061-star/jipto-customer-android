@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">JIPTO</string>
+    <string name="tagline">किराना। तुरंत।</string>
+    <string name="delivery_location_heading">डिलीवरी का पता</string>
+    <string name="change_delivery_address">डिलीवरी का पता बदलें</string>
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="nav_home">होम</string>
+    <string name="nav_search">खोजें</string>
+    <string name="nav_cart">कार्ट</string>
+    <string name="nav_my_orders">मेरे ऑर्डर</string>
+    <string name="nav_profile">प्रोफ़ाइल</string>
+    <string name="theme_settings">थीम सेटिंग्स</string>
+    <string name="theme_light">लाइट मोड</string>
+    <string name="theme_dark">डार्क मोड</string>
+    <string name="theme_system">सिस्टम डिफ़ॉल्ट</string>
+    <string name="language_settings">भाषा सेटिंग्स</string>
+    <string name="lang_english">English (अंग्रेज़ी)</string>
+    <string name="lang_hindi">हिन्दी (Hindi)</string>
+    <string name="track_order">ऑर्डर ट्रैक करें</string>
+    <string name="order_details">ऑर्डर विवरण देखें</string>
+    <string name="add_to_cart">कार्ट में जोड़ें</string>
+    <string name="proceed_to_checkout">चेकआउट के लिए आगे बढ़ें</string>
+</resources>

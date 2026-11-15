@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">JIPTO</string>
+    <string name="tagline">Grocery. Quickly.</string>
+    <string name="delivery_location_heading">DELIVERY LOCATION</string>
+    <string name="change_delivery_address">Change Delivery Address</string>
+    <string name="settings_title">Settings</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_cart">Cart</string>
+    <string name="nav_my_orders">My Orders</string>
+    <string name="nav_profile">Profile</string>
+    <string name="theme_settings">Theme Settings</string>
+    <string name="theme_light">Light Mode</string>
+    <string name="theme_dark">Dark Mode</string>
+    <string name="theme_system">System Default</string>
+    <string name="language_settings">Language Settings</string>
+    <string name="lang_english">English</string>
+    <string name="lang_hindi">हिन्दी (Hindi)</string>
+    <string name="track_order">Track Order</string>
+    <string name="order_details">Order Details</string>
+    <string name="add_to_cart">Add to Cart</string>
+    <string name="proceed_to_checkout">Proceed to Checkout</string>
+</resources>
